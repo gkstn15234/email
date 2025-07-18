@@ -2,21 +2,23 @@ name: Daily Email Sender
 
 on:
   schedule:
+    # 한국 시간(KST)으로 매일 오전 9시에 실행 (UTC 기준 0시)
     - cron: '0 0 * * *'
-  workflow_dispatch:
+  workflow_dispatch: # Actions 탭에서 수동으로 실행할 수 있게 함
 
 jobs:
   send-email:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-          
+
       - name: Run email script
         env:
           SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
