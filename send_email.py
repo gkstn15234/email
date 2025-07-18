@@ -48,6 +48,21 @@ MODEL_CONFIGS = {
     }
 }
 
+def get_email_sequence_number():
+    """현재 시간을 기준으로 발송 순서 번호 반환"""
+    current_time = datetime.now(KST)
+    minute = current_time.minute
+    
+    # 15분, 25분, 35분 기준으로 순서 결정
+    if 10 <= minute < 20:
+        return 1, "첫 번째"
+    elif 20 <= minute < 30:
+        return 2, "두 번째"
+    elif 30 <= minute < 40:
+        return 3, "세 번째"
+    else:
+        return 1, "첫 번째"  # 기본값
+
 def get_google_news():
     """Google 뉴스 RSS에서 최신 뉴스 가져오기"""
     try:
@@ -123,6 +138,9 @@ def create_email_content():
     # 한국 시간으로 현재 시간 가져오기
     current_time = datetime.now(KST).strftime("%Y년 %m월 %d일 %H시 %M분 (KST)")
     
+    # 발송 순서 번호 가져오기
+    seq_num, seq_text = get_email_sequence_number()
+    
     # 뉴스 가져오기
     news_items = get_google_news()
     
@@ -140,7 +158,7 @@ def create_email_content():
         model_info = MODEL_CONFIGS.get(OPENAI_MODEL, MODEL_CONFIGS['gpt-3.5-turbo'])
         
         body = f"""
-🌅 좋은 아침입니다!
+🌅 좋은 아침입니다! ({seq_text} 발송)
 
 📅 {current_time}
 
@@ -153,12 +171,13 @@ def create_email_content():
 좋은 하루 보내세요! 💪
 
 ---
+📧 발송 정보: {seq_num}/3 (오늘 {seq_text} 발송)
 🔧 사용된 AI 모델: {OPENAI_MODEL} ({model_info['description']})
 자동 발송 시스템 by GitHub Actions
         """
     else:
         body = f"""
-🌅 좋은 아침입니다!
+🌅 좋은 아침입니다! ({seq_text} 발송)
 
 📅 {current_time}
 
@@ -168,13 +187,17 @@ def create_email_content():
 좋은 하루 보내세요! 💪
 
 ---
+📧 발송 정보: {seq_num}/3 (오늘 {seq_text} 발송)
 자동 발송 시스템 by GitHub Actions
         """
     
     return body
 
+# 발송 순서 번호 가져오기
+seq_num, seq_text = get_email_sequence_number()
+
 # 이메일 내용 생성
-subject = "🌅 오늘의 뉴스 브리핑 - 자동 발송"
+subject = f"🌅 오늘의 뉴스 브리핑 ({seq_num}/3) - 자동 발송"
 body = create_email_content()
 
 # 이메일 메시지 객체 생성
@@ -191,6 +214,7 @@ try:
         smtp.send_message(msg)
     print("이메일 발송 성공!")
     print(f"사용된 모델: {OPENAI_MODEL}")
+    print(f"발송 순서: {seq_num}/3 ({seq_text})")
     print(f"발송 시간: {datetime.now(KST).strftime('%Y-%m-%d %H:%M:%S KST')}")
 except Exception as e:
     print(f"이메일 발송 실패: {e}") 
