@@ -6,15 +6,17 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  send-email:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+          
       - name: Run email script
         env:
           SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
