@@ -1,18 +1,15 @@
 name: Daily Email Sender
 
 on:
-  schedule:
-    # 한국 시간(KST) 기준으로 10분 간격 3번 실행 (테스트용)
-    # UTC 시간으로는 18시 15분, 18시 25분, 18시 35분 (전날) - 한국은 UTC+9
-    - cron: '15 18 * * *'  # 한국 시간 오전 3시 15분
-    - cron: '25 18 * * *'  # 한국 시간 오전 3시 25분
-    - cron: '35 18 * * *'  # 한국 시간 오전 3시 35분
-    
-    # 다른 시간 옵션들 (주석 해제하여 사용 가능):
-    # - cron: '0 0 * * *'   # 한국 시간 오전 9시
-    # - cron: '0 12 * * *'  # 한국 시간 오후 9시
-    # - cron: '30 23 * * *' # 한국 시간 오전 8시 30분
-    # - cron: '0 1 * * *'   # 한국 시간 오전 10시
+  # n8n 웹훅을 통한 트리거
+  repository_dispatch:
+    types: [send-email]
+  
+  # 기존 cron 스케줄 (필요시 주석 해제)
+  # schedule:
+  #   - cron: '15 18 * * *'  # 한국 시간 오전 3시 15분
+  #   - cron: '25 18 * * *'  # 한국 시간 오전 3시 25분
+  #   - cron: '35 18 * * *'  # 한국 시간 오전 3시 35분
   
   workflow_dispatch: # Actions 탭에서 수동으로 실행할 수 있게 함
 
@@ -47,4 +44,6 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
           TZ: Asia/Seoul
+          # n8n에서 전달받은 데이터 (옵션)
+          WEBHOOK_DATA: ${{ github.event.client_payload.data }}
         run: python send_email.py 
